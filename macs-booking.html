@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Table — Mac's Irish Pub Kilmore</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Lora:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g1:#050d06;--g2:#0a1a0c;--g3:#0f2412;--g4:#1a3d1f;
+  --gold:#c9a84c;--gold2:#e8c97a;
+  --cream:#f5edd8;--cream2:#e8dcc0;
+  --brown:#3d2b1f;
+  --red:#c0392b;--green:#27ae60;--amber:#e67e22;
+}
+html{scroll-behavior:smooth}
+body{background:var(--g1);color:var(--cream);font-family:'Lora',serif;min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(5,13,6,0.97);border-bottom:1px solid rgba(201,168,76,0.25);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;backdrop-filter:blur(12px)}
+.nav-brand{font-family:'IM Fell English',serif;font-size:1.15rem;color:var(--gold);text-decoration:none;display:flex;align-items:center;gap:8px}
+.nav-back{font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream2);opacity:0.45;text-decoration:none;transition:opacity 0.2s,color 0.2s}
+.nav-back:hover{opacity:1;color:var(--gold)}
+
+.page{max-width:860px;margin:0 auto;padding:90px 2rem 5rem}
+
+/* HEADER */
+.bk-header{text-align:center;padding:2.5rem 0 3rem}
+.bk-eyebrow{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--gold);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:0.6rem}
+.bk-h1{font-family:'IM Fell English',serif;font-size:clamp(2rem,5vw,3.2rem);color:var(--cream);line-height:1.05;margin-bottom:0.5rem}
+.bk-rule{width:120px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:1rem auto 0.8rem}
+.bk-sub{font-style:italic;color:var(--cream2);opacity:0.55;font-size:0.9rem}
+
+/* STEPS */
+.steps{display:flex;align-items:center;justify-content:center;margin-bottom:2.5rem;gap:0}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;top:15px;left:calc(50% + 16px);right:calc(-50% + 16px);height:1px;background:rgba(201,168,76,0.15);transition:background 0.4s}
+.step.done:not(:last-child)::after{background:rgba(201,168,76,0.5)}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:0.82rem;color:var(--cream2);opacity:0.4;transition:all 0.3s;background:var(--g3);position:relative;z-index:1;font-family:'IM Fell English',serif}
+.step.active .step-dot{border-color:var(--gold);color:var(--gold);opacity:1;background:rgba(201,168,76,0.08);box-shadow:0 0 14px rgba(201,168,76,0.15)}
+.step.done .step-dot{border-color:var(--gold);background:var(--gold);color:var(--brown);opacity:1}
+.step-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream2);opacity:0.35}
+.step.active .step-label{opacity:0.9;color:var(--gold)}
+.step.done .step-label{opacity:0.6}
+
+/* CARD */
+.bk-card{background:rgba(10,26,12,0.7);border:1px solid rgba(201,168,76,0.18);padding:2.5rem;position:relative;overflow:hidden}
+.bk-card::after{content:'☘';position:absolute;right:-1.5rem;bottom:-3rem;font-size:14rem;opacity:0.025;pointer-events:none;line-height:1}
+
+/* SECTION TITLES */
+.f-title{font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--gold);margin-bottom:1.5rem;padding-bottom:0.7rem;border-bottom:1px solid rgba(201,168,76,0.12)}
+
+/* FIELDS */
+.frow{display:grid;gap:1.2rem;margin-bottom:1.2rem}
+.frow.c2{grid-template-columns:1fr 1fr}
+.frow.c3{grid-template-columns:1fr 1fr 1fr}
+.fgroup{display:flex;flex-direction:column;gap:0.35rem}
+.flabel{font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);opacity:0.75}
+.finput{background:rgba(5,13,6,0.8);border:1px solid rgba(201,168,76,0.18);color:var(--cream);padding:0.8rem 1rem;font-family:'Lora',serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;border-radius:0;-webkit-appearance:none}
+.finput:focus{border-color:rgba(201,168,76,0.5)}
+.finput::placeholder{color:rgba(245,237,216,0.2)}
+.finput option{background:#0f2412}
+textarea.finput{resize:vertical;min-height:90px}
+.finput.err{border-color:rgba(192,57,43,0.6)}
+.ferr{font-size:0.7rem;color:#e05555;margin-top:0.2rem;display:none}
+.fgroup.has-err .ferr{display:block}
+
+/* AREA SELECTOR */
+.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.area-card{border:1px solid rgba(201,168,76,0.18);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(5,13,6,0.5);position:relative}
+.area-card:hover{border-color:rgba(201,168,76,0.4);background:rgba(26,61,31,0.3)}
+.area-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.area-card.full{opacity:0.4;cursor:not-allowed;pointer-events:none}
+.area-icon{font-size:1.8rem;margin-bottom:0.6rem}
+.area-name{font-family:'IM Fell English',serif;font-size:1rem;color:var(--cream);margin-bottom:0.3rem}
+.area-cap{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream2);opacity:0.5;margin-bottom:0.5rem}
+.area-avail{font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;padding:0.2rem 0.6rem;display:inline-block}
+.area-avail.open{color:var(--green);border:1px solid rgba(39,174,96,0.3)}
+.area-avail.limited{color:var(--amber);border:1px solid rgba(230,126,34,0.3)}
+.area-avail.full-tag{color:var(--red);border:1px solid rgba(192,57,43,0.3)}
+.area-avail.loading{color:var(--cream2);opacity:0.4;border:1px solid rgba(245,237,216,0.1)}
+
+/* TABLE MAP */
+.table-map{margin-bottom:1.5rem}
+.table-map-title{font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);opacity:0.6;margin-bottom:1rem}
+.table-grid{display:flex;flex-wrap:wrap;gap:0.7rem}
+.table-btn{
+  border:1px solid rgba(201,168,76,0.2);
+  padding:0.6rem 0.9rem;
+  background:rgba(5,13,6,0.6);
+  cursor:pointer;transition:all 0.2s;
+  text-align:center;min-width:80px;
+  position:relative;
+}
+.table-btn:hover:not(.unavail){border-color:rgba(201,168,76,0.5);background:rgba(26,61,31,0.4)}
+.table-btn.selected{border-color:var(--gold);background:rgba(201,168,76,0.1)}
+.table-btn.unavail{opacity:0.35;cursor:not-allowed;background:rgba(192,57,43,0.08);border-color:rgba(192,57,43,0.2)}
+.table-btn-label{font-family:'IM Fell English',serif;font-size:0.85rem;color:var(--cream);display:block}
+.table-btn-seats{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream2);opacity:0.5}
+.table-status-dot{width:7px;height:7px;border-radius:50%;position:absolute;top:6px;right:6px}
+.table-status-dot.avail{background:var(--green)}
+.table-status-dot.taken{background:var(--red)}
+.table-legend{display:flex;gap:1.5rem;margin-top:0.8rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream2);opacity:0.5}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* GUEST COUNTER */
+.gcounter{display:flex;align-items:center;gap:1.2rem;background:rgba(5,13,6,0.8);border:1px solid rgba(201,168,76,0.18);padding:0.75rem 1.2rem;width:fit-content}
+.gcbtn{width:30px;height:30px;border:1px solid rgba(201,168,76,0.25);background:transparent;color:var(--gold);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;font-family:'Lora',serif}
+.gcbtn:hover{background:rgba(201,168,76,0.1)}
+.gcval{font-family:'IM Fell English',serif;font-size:1.8rem;color:var(--cream);min-width:28px;text-align:center}
+.gclabel{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream2);opacity:0.45}
+
+/* OCCASION PILLS */
+.occasions{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.5rem}
+.occ-pill{border:1px solid rgba(201,168,76,0.18);padding:0.5rem 1rem;cursor:pointer;transition:all 0.2s;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--cream2);opacity:0.6;background:rgba(5,13,6,0.5)}
+.occ-pill:hover{opacity:0.9;border-color:rgba(201,168,76,0.35)}
+.occ-pill.selected{border-color:var(--gold);color:var(--gold);opacity:1;background:rgba(201,168,76,0.07)}
+
+/* AVAILABILITY NOTICE */
+.avail-notice{padding:0.8rem 1rem;margin-bottom:1.5rem;font-size:0.82rem;line-height:1.6;border-left:2px solid}
+.avail-notice.info{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.04);color:var(--cream2)}
+.avail-notice.warn{border-color:rgba(230,126,34,0.5);background:rgba(230,126,34,0.04);color:#f0a050}
+.avail-notice.error{border-color:rgba(192,57,43,0.5);background:rgba(192,57,43,0.04);color:#e07070}
+.avail-notice.success{border-color:rgba(39,174,96,0.5);background:rgba(39,174,96,0.04);color:#70c090}
+
+/* SUMMARY */
+.summary-box{background:rgba(5,13,6,0.6);border:1px solid rgba(201,168,76,0.15);padding:1.5rem;margin-bottom:1.5rem}
+.sum-title{font-family:'IM Fell English',serif;font-size:0.95rem;color:var(--gold);margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid rgba(201,168,76,0.1)}
+.sum-rows{display:flex;flex-direction:column;gap:0.55rem}
+.sum-row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.sum-key{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream2);opacity:0.45;white-space:nowrap}
+.sum-val{font-size:0.88rem;color:var(--cream);text-align:right}
+.sum-highlight{color:var(--gold)}
+
+/* POLICY */
+.policy{border-left:2px solid rgba(201,168,76,0.25);padding:0.8rem 1.2rem;margin-bottom:1.5rem;background:rgba(201,168,76,0.03)}
+.policy p{font-size:0.8rem;color:var(--cream2);opacity:0.55;line-height:1.75}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:1rem;justify-content:space-between;align-items:center;margin-top:2rem}
+.btn-next{background:var(--gold);color:var(--brown);border:none;padding:0.9rem 2.5rem;font-family:'Lora',serif;font-weight:600;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;margin-left:auto}
+.btn-next:hover{background:var(--gold2)}
+.btn-next:disabled{opacity:0.35;cursor:not-allowed}
+.btn-back{background:transparent;color:var(--cream2);border:1px solid rgba(201,168,76,0.2);padding:0.9rem 1.8rem;font-family:'Lora',serif;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.btn-back:hover{border-color:rgba(201,168,76,0.4);color:var(--cream)}
+
+/* FORM SECTIONS */
+.fsection{display:none}
+.fsection.active{display:block}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:1.5rem 0}
+.suc-icon{font-size:3.5rem;display:block;margin-bottom:1.2rem}
+.suc-title{font-family:'IM Fell English',serif;font-size:2.2rem;color:var(--cream);margin-bottom:0.5rem}
+.suc-sub{font-style:italic;color:var(--cream2);opacity:0.55;font-size:0.92rem;line-height:1.8;max-width:420px;margin:0 auto 2rem}
+.suc-ref{display:inline-block;border:1px solid rgba(201,168,76,0.3);padding:0.6rem 2rem;font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--gold);margin-bottom:2rem;letter-spacing:0.12em}
+
+/* LOADING SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,168,76,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONTACT STRIP */
+.contact-strip{display:flex;gap:2rem;justify-content:center;margin-top:2.5rem;padding-top:2rem;border-top:1px solid rgba(201,168,76,0.08);flex-wrap:wrap}
+.cs-item{font-size:0.8rem;color:var(--cream2);opacity:0.4}
+.cs-item a{color:inherit;text-decoration:none}
+.cs-item a:hover{color:var(--gold);opacity:1}
+
+/* SETUP BANNER */
+.setup-banner{background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.3);padding:1rem 1.5rem;margin-bottom:2rem;font-size:0.82rem;color:#f0a050;line-height:1.7}
+.setup-banner strong{color:var(--gold2)}
+.setup-banner code{background:rgba(201,168,76,0.1);padding:0.1rem 0.4rem;font-size:0.78rem;color:var(--gold2)}
+
+@media(max-width:640px){
+  .bk-card{padding:1.5rem}
+  .frow.c2,.frow.c3{grid-template-columns:1fr}
+  .area-grid{grid-template-columns:1fr}
+  .btn-row{flex-wrap:wrap}
+  .btn-next,.btn-back{width:100%}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="macspubkilmore.html" class="nav-brand">☘ Mac's Irish Pub</a>
+  <a href="macspubkilmore.html" class="nav-back">← Back to Website</a>
+</nav>
+
+<div class="page">
+  <div class="bk-header">
+    <p class="bk-eyebrow">Reserve Your Spot</p>
+    <h1 class="bk-h1">Book a Table</h1>
+    <div class="bk-rule"></div>
+    <p class="bk-sub">57–59 Sydney St, Kilmore · Kitchen: Lunch 12:30–2:30pm · Dinner 6:00–8:30pm</p>
+  </div>
+
+
+  <div class="steps" id="stepsEl">
+    <div class="step active" data-s="1"><div class="step-dot">1</div><div class="step-label">When</div></div>
+    <div class="step" data-s="2"><div class="step-dot">2</div><div class="step-label">Where</div></div>
+    <div class="step" data-s="3"><div class="step-dot">3</div><div class="step-label">Details</div></div>
+    <div class="step" data-s="4"><div class="step-dot">4</div><div class="step-label">Confirm</div></div>
+  </div>
+
+  <div class="bk-card">
+
+    <!-- STEP 1: DATE / TIME / GUESTS / OCCASION -->
+    <div class="fsection active" id="s1">
+      <div class="f-title">When would you like to visit?</div>
+      <div class="frow c2">
+        <div class="fgroup" id="fg-date">
+          <label class="flabel">Date</label>
+          <input type="date" class="finput" id="inp-date" min="">
+          <span class="ferr">Please select a date</span>
+        </div>
+        <div class="fgroup" id="fg-session">
+          <label class="flabel">Session</label>
+          <select class="finput" id="inp-session">
+            <option value="">Select session</option>
+            <option value="lunch">Lunch (12:30pm – 2:30pm)</option>
+            <option value="dinner">Dinner (6:00pm – 8:30pm)</option>
+          </select>
+          <span class="ferr">Please select a session</span>
+        </div>
+      </div>
+      <div class="fgroup" style="margin-bottom:1.5rem">
+        <label class="flabel">Number of Guests</label>
+        <div style="margin-top:0.4rem">
+          <div class="gcounter">
+            <button class="gcbtn" id="gdec">−</button>
+            <span class="gcval" id="gcval">2</span>
+            <span class="gclabel">Guests</span>
+            <button class="gcbtn" id="ginc">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Occasion</label>
+        <div class="occasions">
+          <div class="occ-pill selected" data-occ="Dining">🍽️ Dining</div>
+          <div class="occ-pill" data-occ="Birthday">🎂 Birthday</div>
+          <div class="occ-pill" data-occ="Anniversary">💛 Anniversary</div>
+          <div class="occ-pill" data-occ="Live Music Night">🎸 Live Music Night</div>
+          <div class="occ-pill" data-occ="Work Function">🤝 Work Function</div>
+          <div class="occ-pill" data-occ="Irish Night">☘ Irish Night</div>
+          <div class="occ-pill" data-occ="Steak Night">🥩 Steak Night</div>
+          <div class="occ-pill" data-occ="Other">· Other</div>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn-next" id="n1">Continue →</button></div>
+    </div>
+
+    <!-- STEP 2: AREA + TABLE SELECTION -->
+    <div class="fsection" id="s2">
+      <div class="f-title">Choose your area & table</div>
+      <div id="avail-notice-area"></div>
+
+      <label class="flabel" style="margin-bottom:0.8rem;display:block">Select Area</label>
+      <div class="area-grid">
+        <div class="area-card selected" data-area="bar" id="area-bar">
+          <div class="area-icon">🍺</div>
+          <div class="area-name">Bar Area</div>
+          <div class="area-cap">Up to 18 guests · 5 tables</div>
+          <span class="area-avail loading" id="avail-bar">Checking...</span>
+        </div>
+        <div class="area-card" data-area="bistro" id="area-bistro">
+          <div class="area-icon">🍽️</div>
+          <div class="area-name">Bistro</div>
+          <div class="area-cap">Up to 58 guests · 10 tables</div>
+          <span class="area-avail loading" id="avail-bistro">Checking...</span>
+        </div>
+        <div class="area-card" data-area="outside" id="area-outside">
+          <div class="area-icon">🌿</div>
+          <div class="area-name">Outside Area</div>
+          <div class="area-cap">Up to 24 guests · 6 tables</div>
+          <span class="area-avail loading" id="avail-outside">Checking...</span>
+        </div>
+      </div>
+
+      <div class="table-map" id="tableMapWrap">
+        <div class="table-map-title">Select a Table — <span id="area-label">Bar Area</span></div>
+        <div class="table-grid" id="tableGrid"></div>
+        <div class="table-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Available</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Taken</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Selected</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" id="b2">← Back</button>
+        <button class="btn-next" id="n2">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: CONTACT DETAILS -->
+    <div class="fsection" id="s3">
+      <div class="f-title">Your details</div>
+      <div class="frow c2">
+        <div class="fgroup" id="fg-fname"><label class="flabel">First Name</label><input type="text" class="finput" id="inp-fname" placeholder="John"><span class="ferr">Required</span></div>
+        <div class="fgroup" id="fg-lname"><label class="flabel">Last Name</label><input type="text" class="finput" id="inp-lname" placeholder="Murphy"><span class="ferr">Required</span></div>
+      </div>
+      <div class="frow c2">
+        <div class="fgroup" id="fg-phone"><label class="flabel">Phone</label><input type="tel" class="finput" id="inp-phone" placeholder="04XX XXX XXX"><span class="ferr">Required</span></div>
+        <div class="fgroup" id="fg-email"><label class="flabel">Email</label><input type="email" class="finput" id="inp-email" placeholder="john@email.com"><span class="ferr">Enter a valid email</span></div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Special Requests <span style="opacity:0.35;font-size:0.7rem;letter-spacing:0">(optional)</span></label>
+        <textarea class="finput" id="inp-req" placeholder="Dietary needs, allergies, high chairs, seating preferences..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" id="b3">← Back</button>
+        <button class="btn-next" id="n3">Review Booking →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: CONFIRM -->
+    <div class="fsection" id="s4">
+      <div class="f-title">Review & Confirm</div>
+      <div class="summary-box">
+        <div class="sum-title">☘ Booking Summary</div>
+        <div class="sum-rows" id="summaryRows"></div>
+      </div>
+      <div class="policy">
+        <p>Tables are held for <strong style="color:var(--cream2);opacity:1">15 minutes</strong> past your booking time. By confirming you agree to this policy. A confirmation email will be sent once your booking is received. For groups needing a full section, call us on <strong style="color:var(--cream2);opacity:1">03 5781 1440</strong>.</p>
+      </div>
+      <div id="submit-notice"></div>
+      <div class="btn-row">
+        <button class="btn-back" id="b4">← Edit</button>
+        <button class="btn-next" id="submitBtn">Confirm Booking ☘</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <span class="suc-icon">☘</span>
+      <h2 class="suc-title">You're booked in!</h2>
+      <p class="suc-sub">We'll see you soon. A confirmation has been sent to your email. If you need to change or cancel, call us on 03 5781 1440.</p>
+      <div class="suc-ref" id="refEl">REF #MAC-000000</div>
+      <div class="summary-box" id="sucDetails" style="max-width:440px;margin:0 auto 2rem;text-align:left"></div>
+      <a href="macspubkilmore.html" style="display:inline-block;background:var(--gold);color:var(--brown);padding:0.9rem 2.5rem;font-family:'Lora',serif;font-weight:600;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;">← Back to Mac's</a>
+    </div>
+
+  </div><!-- /bk-card -->
+
+  <div class="contact-strip">
+    <div class="cs-item">📍 57–59 Sydney St, Kilmore VIC 3764</div>
+    <div class="cs-item">📞 <a href="tel:0357811440">03 5781 1440</a></div>
+    <div class="cs-item">✉️ <a href="mailto:macspubkilmore@gmail.com">macspubkilmore@gmail.com</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SUPABASE CONFIG — replace these two values to go live
+// ============================================================
+const SUPABASE_URL = 'https://ewfnbswbcqakxdnfwvqj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1Ysj2MG-3TULeBSVIFdELg_iMNz3otC';
+const DEMO_MODE = SUPABASE_URL === 'YOUR_SUPABASE_URL';
+
+let sb = null;
+if (!DEMO_MODE) {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+
+// ============================================================
+// TABLE LAYOUT — exact tables from the pub
+// ============================================================
+const TABLES = {
+  bar: [
+    { id:'bar-1', label:'Bar 1', seats:4 },
+    { id:'bar-2', label:'Bar 2', seats:4 },
+    { id:'bar-3', label:'Bar 3', seats:2 },
+    { id:'bar-4', label:'Bar 4', seats:4 },
+    { id:'bar-5', label:'Bar 5', seats:4 },
+  ],
+  bistro: [
+    { id:'bis-1',  label:'Bistro 1',  seats:8  },
+    { id:'bis-2',  label:'Bistro 2',  seats:10 },
+    { id:'bis-3',  label:'Bistro 3',  seats:8  },
+    { id:'bis-4',  label:'Bistro 4',  seats:6  },
+    { id:'bis-5',  label:'Bistro 5',  seats:4  },
+    { id:'bis-6',  label:'Bistro 6',  seats:4  },
+    { id:'bis-7',  label:'Bistro 7',  seats:6  },
+    { id:'bis-8',  label:'Bistro 8',  seats:4  },
+    { id:'bis-9',  label:'Bistro 9',  seats:2  },
+    { id:'bis-10', label:'Bistro 10', seats:8  },
+    { id:'bis-11', label:'Bistro 11', seats:8  },
+  ],
+  outside: [
+    { id:'out-1', label:'Outside 1', seats:4 },
+    { id:'out-2', label:'Outside 2', seats:4 },
+    { id:'out-3', label:'Outside 3', seats:4 },
+    { id:'out-4', label:'Outside 4', seats:4 },
+    { id:'out-5', label:'Outside 5', seats:4 },
+    { id:'out-6', label:'Outside 6', seats:4 },
+  ]
+};
+
+const AREA_NAMES = { bar:'Bar Area', bistro:'Bistro', outside:'Outside Area' };
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  date:'', session:'', guests:2, occasion:'Dining',
+  area:'bar', tableId:null, tableLabel:'', tableSeats:0,
+  fname:'', lname:'', phone:'', email:'', requests:'',
+  step:1
+};
+let bookedTables = {}; // { tableId: true }
+
+// ============================================================
+// INIT
+// ============================================================
+const today = new Date();
+const pad = n => String(n).padStart(2,'0');
+document.getElementById('inp-date').min = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+
+// Guest counter
+document.getElementById('ginc').onclick = () => { if(state.guests<20){state.guests++;document.getElementById('gcval').textContent=state.guests;} };
+document.getElementById('gdec').onclick = () => { if(state.guests>1){state.guests--;document.getElementById('gcval').textContent=state.guests;} };
+
+// Occasion pills
+document.querySelectorAll('.occ-pill').forEach(p => {
+  p.onclick = () => {
+    document.querySelectorAll('.occ-pill').forEach(x=>x.classList.remove('selected'));
+    p.classList.add('selected');
+    state.occasion = p.dataset.occ;
+  };
+});
+
+// Area cards
+document.querySelectorAll('.area-card').forEach(card => {
+  card.onclick = () => {
+    if(card.classList.contains('full')) return;
+    document.querySelectorAll('.area-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.area = card.dataset.area;
+    state.tableId = null;
+    document.getElementById('area-label').textContent = AREA_NAMES[state.area];
+    renderTableGrid();
+  };
+});
+
+// ============================================================
+// AVAILABILITY CHECK
+// ============================================================
+async function checkAvailability(date, session) {
+  bookedTables = {};
+  if (DEMO_MODE) return; // skip in demo
+
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('table_id')
+      .eq('date', date)
+      .eq('session', session)
+      .eq('status', 'confirmed');
+
+    if (!error && data) {
+      data.forEach(row => { bookedTables[row.table_id] = true; });
+    }
+  } catch(e) { console.warn('Availability check failed:', e); }
+}
+
+function getAreaAvailability(area) {
+  const tables = TABLES[area];
+  const available = tables.filter(t => !bookedTables[t.id]);
+  const fitsGuests = available.filter(t => t.seats >= state.guests);
+  if (DEMO_MODE) return { status:'open', text:'Available', count: tables.length };
+  if (available.length === 0) return { status:'full', text:'Fully Booked', count:0 };
+  if (fitsGuests.length === 0) return { status:'limited', text:'Limited', count: available.length };
+  if (available.length <= 2) return { status:'limited', text:`${available.length} tables left`, count: available.length };
+  return { status:'open', text:`${available.length} tables available`, count: available.length };
+}
+
+function updateAreaBadges() {
+  ['bar','bistro','outside'].forEach(area => {
+    const info = getAreaAvailability(area);
+    const badge = document.getElementById('avail-'+area);
+    const card = document.getElementById('area-'+area);
+    badge.className = 'area-avail';
+    if (info.status === 'full') {
+      badge.classList.add('full-tag');
+      card.classList.add('full');
+    } else if (info.status === 'limited') {
+      badge.classList.add('limited');
+      card.classList.remove('full');
+    } else {
+      badge.classList.add('open');
+      card.classList.remove('full');
+    }
+    badge.textContent = info.text;
+  });
+}
+
+// ============================================================
+// TABLE GRID RENDER
+// ============================================================
+function renderTableGrid() {
+  const grid = document.getElementById('tableGrid');
+  grid.innerHTML = '';
+  const tables = TABLES[state.area];
+
+  tables.forEach(t => {
+    const taken = bookedTables[t.id];
+    const tooSmall = t.seats < state.guests;
+    const unavail = taken || tooSmall;
+
+    const btn = document.createElement('div');
+    btn.className = 'table-btn' + (unavail ? ' unavail' : '') + (state.tableId === t.id ? ' selected' : '');
+    btn.innerHTML = `
+      <div class="table-status-dot ${taken ? 'taken' : 'avail'}"></div>
+      <span class="table-btn-label">${t.label}</span>
+      <span class="table-btn-seats">${t.seats} seats</span>
+    `;
+    if (!unavail) {
+      btn.onclick = () => {
+        state.tableId = t.id;
+        state.tableLabel = t.label;
+        state.tableSeats = t.seats;
+        renderTableGrid();
+      };
+    }
+    if (tooSmall && !taken) {
+      btn.title = `Too small for ${state.guests} guests`;
+    }
+    grid.appendChild(btn);
+  });
+}
+
+// ============================================================
+// STEP NAVIGATION
+// ============================================================
+function goStep(n) {
+  document.querySelectorAll('.fsection').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('.step').forEach(s=>{
+    const sn = parseInt(s.dataset.s);
+    s.classList.remove('active','done');
+    if(sn===n) s.classList.add('active');
+    if(sn<n) s.classList.add('done');
+  });
+  state.step = n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function v1() {
+  let ok = true;
+  const fields = [
+    { id:'fg-date', val: document.getElementById('inp-date').value },
+    { id:'fg-session', val: document.getElementById('inp-session').value },
+  ];
+  fields.forEach(({id,val}) => {
+    const fg = document.getElementById(id);
+    fg.classList.toggle('has-err', !val);
+    if(!val) ok = false;
+  });
+  return ok;
+}
+function v3() {
+  let ok = true;
+  const checks = [
+    { id:'fg-fname', val:()=>document.getElementById('inp-fname').value.trim().length>0 },
+    { id:'fg-lname', val:()=>document.getElementById('inp-lname').value.trim().length>0 },
+    { id:'fg-phone', val:()=>document.getElementById('inp-phone').value.trim().length>6 },
+    { id:'fg-email', val:()=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('inp-email').value) },
+  ];
+  checks.forEach(({id,val}) => {
+    const fg = document.getElementById(id);
+    fg.classList.toggle('has-err', !val());
+    if(!val()) ok = false;
+  });
+  return ok;
+}
+
+// ============================================================
+// STEP BUTTONS
+// ============================================================
+document.getElementById('n1').onclick = async () => {
+  if(!v1()) return;
+  state.date = document.getElementById('inp-date').value;
+  state.session = document.getElementById('inp-session').value;
+
+  // Show loading
+  const btn = document.getElementById('n1');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Checking availability...';
+
+  await checkAvailability(state.date, state.session);
+  updateAreaBadges();
+  renderTableGrid();
+
+  btn.disabled = false;
+  btn.textContent = 'Continue →';
+  goStep(2);
+};
+
+document.getElementById('b2').onclick = () => goStep(1);
+document.getElementById('n2').onclick = () => {
+  if(!state.tableId) {
+    setNotice('avail-notice-area', 'warn', 'Please select a table to continue.');
+    return;
+  }
+  setNotice('avail-notice-area', '', '');
+  goStep(3);
+};
+
+document.getElementById('b3').onclick = () => goStep(2);
+document.getElementById('n3').onclick = () => {
+  if(!v3()) return;
+  state.fname = document.getElementById('inp-fname').value.trim();
+  state.lname = document.getElementById('inp-lname').value.trim();
+  state.phone = document.getElementById('inp-phone').value.trim();
+  state.email = document.getElementById('inp-email').value.trim();
+  state.requests = document.getElementById('inp-req').value.trim();
+  buildSummary();
+  goStep(4);
+};
+
+document.getElementById('b4').onclick = () => goStep(3);
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function buildSummary() {
+  const dFmt = new Date(state.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const sessionFmt = state.session === 'lunch' ? 'Lunch (12:30 – 2:30pm)' : 'Dinner (6:00 – 8:30pm)';
+  const rows = [
+    ['Date', dFmt],
+    ['Session', sessionFmt],
+    ['Guests', state.guests + (state.guests===1?' Guest':' Guests')],
+    ['Occasion', state.occasion],
+    ['Area', AREA_NAMES[state.area]],
+    ['Table', `${state.tableLabel} (${state.tableSeats} seats)`],
+    ['Name', `${state.fname} ${state.lname}`],
+    ['Phone', state.phone],
+    ['Email', state.email],
+    ...(state.requests ? [['Requests', state.requests]] : []),
+  ];
+  document.getElementById('summaryRows').innerHTML = rows.map(([k,v]) =>
+    `<div class="sum-row"><span class="sum-key">${k}</span><span class="sum-val">${v}</span></div>`
+  ).join('');
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+document.getElementById('submitBtn').onclick = async () => {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Confirming...';
+  setNotice('submit-notice','','');
+
+  const ref = 'MAC-' + Math.random().toString(36).substr(2,6).toUpperCase();
+  const dFmt = new Date(state.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  if (DEMO_MODE) {
+    // Demo mode — simulate success
+    await new Promise(r=>setTimeout(r,1200));
+    showSuccess(ref, dFmt);
+    return;
+  }
+
+  try {
+    // Double-check table not taken since step 2
+    const { data: chk } = await sb
+      .from('bookings')
+      .select('id')
+      .eq('date', state.date)
+      .eq('session', state.session)
+      .eq('table_id', state.tableId)
+      .eq('status', 'confirmed')
+      .limit(1);
+
+    if (chk && chk.length > 0) {
+      setNotice('submit-notice','error','Sorry — that table was just taken. Please go back and choose another.');
+      btn.disabled=false; btn.textContent='Confirm Booking ☘';
+      return;
+    }
+
+    const { error } = await sb.from('bookings').insert([{
+      reference: ref,
+      date: state.date,
+      session: state.session,
+      guests: state.guests,
+      occasion: state.occasion,
+      area: state.area,
+      table_id: state.tableId,
+      table_label: state.tableLabel,
+      first_name: state.fname,
+      last_name: state.lname,
+      phone: state.phone,
+      email: state.email,
+      requests: state.requests,
+      status: 'confirmed'
+    }]);
+
+    if (error) throw error;
+
+    // Send email notification to pub
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer re_M1yBtpyQ_E4oe3vbSyxJQwyGELwDURSBd'
+        },
+        body: JSON.stringify({
+          from: 'bookings@macspubkilmore.com',
+          to: 'macspubkilmore@gmail.com',
+          subject: `New Booking — ${ref} · ${state.fname} ${state.lname} · ${dFmt}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0f1a10;color:#f0e8d0;padding:2rem;border-radius:6px">
+              <div style="text-align:center;margin-bottom:1.5rem">
+                <div style="font-size:2rem">☘</div>
+                <h2 style="color:#c9a84c;margin:0.5rem 0 0.2rem;font-size:1.3rem">New Booking Confirmed</h2>
+                <p style="color:#8a8070;font-size:0.85rem;margin:0">Mac's Irish Pub · ${dFmt}</p>
+              </div>
+              <div style="background:#192019;border-radius:4px;padding:1.25rem;margin-bottom:1rem">
+                <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Reference</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a;color:#c9a84c;font-weight:600">${ref}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Name</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.fname} ${state.lname}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Date</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${dFmt}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Session</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.session === 'lunch' ? 'Lunch (12:30–2:30pm)' : 'Dinner (6:00–8:30pm)'}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Guests</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.guests}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Area</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.area.charAt(0).toUpperCase()+state.area.slice(1)}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Table</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.tableLabel}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Occasion</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a">${state.occasion || '—'}</td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Phone</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a"><a href="tel:${state.phone}" style="color:#c9a84c">${state.phone}</a></td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0;border-bottom:1px solid #2a3a2a">Email</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #2a3a2a"><a href="mailto:${state.email}" style="color:#c9a84c">${state.email}</a></td></tr>
+                  <tr><td style="color:#8a8070;padding:6px 0">Special requests</td><td style="text-align:right;padding:6px 0">${state.requests || '—'}</td></tr>
+                </table>
+              </div>
+              <p style="text-align:center;font-size:0.78rem;color:#8a8070;margin:0">Mac's Irish Pub · 57–59 Sydney St, Kilmore VIC 3764 · 03 5781 1440</p>
+            </div>
+          `
+        })
+      });
+    } catch(emailErr) {
+      console.warn('Email notification failed:', emailErr);
+    }
+
+    showSuccess(ref, dFmt);
+
+  } catch(e) {
+    setNotice('submit-notice','error','Something went wrong. Please call us on 03 5781 1440 to book.');
+    btn.disabled=false; btn.textContent='Confirm Booking ☘';
+  }
+};
+
+function showSuccess(ref, dFmt) {
+  document.getElementById('stepsEl').style.display='none';
+  document.querySelectorAll('.fsection').forEach(s=>s.classList.remove('active'));
+  document.getElementById('successScreen').style.display='block';
+  document.getElementById('refEl').textContent = 'REF #'+ref;
+  document.getElementById('sucDetails').innerHTML = `
+    <div class="sum-title">☘ Your Booking</div>
+    <div class="sum-rows">
+      <div class="sum-row"><span class="sum-key">Name</span><span class="sum-val">${state.fname} ${state.lname}</span></div>
+      <div class="sum-row"><span class="sum-key">Date</span><span class="sum-val">${dFmt}</span></div>
+      <div class="sum-row"><span class="sum-key">Session</span><span class="sum-val">${state.session==='lunch'?'Lunch':'Dinner'}</span></div>
+      <div class="sum-row"><span class="sum-key">Guests</span><span class="sum-val">${state.guests}</span></div>
+      <div class="sum-row"><span class="sum-key">Area</span><span class="sum-val">${AREA_NAMES[state.area]}</span></div>
+      <div class="sum-row"><span class="sum-key">Table</span><span class="sum-val">${state.tableLabel}</span></div>
+    </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function setNotice(id, type, msg) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!type || !msg){ el.innerHTML=''; return; }
+  el.innerHTML = `<div class="avail-notice ${type}" style="margin-bottom:1rem">${msg}</div>`;
+}
+</script>
+</body>
+</html>
