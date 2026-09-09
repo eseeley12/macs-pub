@@ -409,7 +409,7 @@ const AREA_NAMES = { bar:'Bar Area', bistro:'Bistro', outside:'Outside Area' };
 // ============================================================
 let state = {
   date:'', session:'', guests:2, occasion:'Dining',
-  area:'bar', tableId:null, tableLabel:'', tableSeats:0,
+  area:'bar', tableId:'staff-directed', tableLabel:'', tableSeats:0,
   fname:'', lname:'', phone:'', email:'', requests:'',
   step:1
 };
@@ -608,7 +608,7 @@ document.getElementById('n1').onclick = async () => {
 document.getElementById('b2').onclick = () => goStep(1);
 document.getElementById('n2').onclick = () => {
   if(!state.tableId) {
-    setNotice('avail-notice-area', 'warn', 'Please select a table to continue.');
+    setNotice('avail-notice-area', 'warn', 'Please select an area to continue.');
     return;
   }
   setNotice('avail-notice-area', '', '');
