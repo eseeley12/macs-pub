@@ -451,20 +451,7 @@ document.querySelectorAll('.area-card').forEach(card => {
 // ============================================================
 // AVAILABILITY CHECK
 // ============================================================
-async function checkAvailability(date, session) {
-  bookedTables = {};
-  if (DEMO_MODE) return; // skip in demo
-
-  try {
-    const { data, error } = await sb
-      .from('bookings')
-      .select('table_id')
-      .eq('date', date)
-      .eq('session', session)
-      .eq('status', 'confirmed');
-
-    if (!error && data) {
-      data.forEach(row => { bookedTables[row.table_id] = true; });
+function {});
     }
   } catch(e) { console.warn('Availability check failed:', e); }
 }
@@ -596,7 +583,7 @@ document.getElementById('n1').onclick = async () => {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Checking availability...';
 
-  await checkAvailability(state.date, state.session);
+  await ;
   updateAreaBadges();
   renderTableGrid();
 
