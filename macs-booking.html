@@ -266,19 +266,19 @@ textarea.finput{resize:vertical;min-height:90px}
           <div class="area-icon">🍺</div>
           <div class="area-name">Bar Area</div>
           <div class="area-cap">Up to 18 guests · 5 tables</div>
-          <span class="area-avail loading" id="avail-bar">Checking...</span>
+          <span class="area-avail loading" id="avail-bar"></span>
         </div>
         <div class="area-card" data-area="bistro" id="area-bistro">
           <div class="area-icon">🍽️</div>
           <div class="area-name">Bistro</div>
           <div class="area-cap">Up to 58 guests · 10 tables</div>
-          <span class="area-avail loading" id="avail-bistro">Checking...</span>
+          <span class="area-avail loading" id="avail-bistro"></span>
         </div>
         <div class="area-card" data-area="outside" id="area-outside">
           <div class="area-icon">🌿</div>
           <div class="area-name">Outside Area</div>
           <div class="area-cap">Up to 24 guests · 6 tables</div>
-          <span class="area-avail loading" id="avail-outside">Checking...</span>
+          <span class="area-avail loading" id="avail-outside"></span>
         </div>
       </div>
 
@@ -608,7 +608,7 @@ document.getElementById('n1').onclick = async () => {
 document.getElementById('b2').onclick = () => goStep(1);
 document.getElementById('n2').onclick = () => {
   if(!state.tableId) {
-    setNotice('avail-notice-area', 'warn', 'Please select a table to continue.');
+    setNotice('avail-notice-area', 'warn', 'Please select an area to continue.');
     return;
   }
   setNotice('avail-notice-area', '', '');
