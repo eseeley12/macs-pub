@@ -444,7 +444,7 @@ document.querySelectorAll('.area-card').forEach(card => {
     state.area = card.dataset.area;
     state.tableId = null;
     document.getElementById('area-label').textContent = AREA_NAMES[state.area];
-    // renderTableGrid();
+    // 
   };
 });
 
@@ -525,7 +525,7 @@ function renderTableGrid_DISABLED() {
         state.tableId = t.id;
         state.tableLabel = t.label;
         state.tableSeats = t.seats;
-        // renderTableGrid();
+        // 
       };
     }
     if (tooSmall && !taken) {
@@ -597,8 +597,8 @@ document.getElementById('n1').onclick = async () => {
   btn.innerHTML = '<span class="spinner"></span>Checking availability...';
 
   await checkAvailability(state.date, state.session);
-  // updateAreaBadges();
-  // renderTableGrid();
+  // 
+  // 
 
   btn.disabled = false;
   btn.textContent = 'Continue →';
