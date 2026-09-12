@@ -678,7 +678,7 @@ document.getElementById('submitBtn').onclick = async () => {
       .select('id')
       .eq('date', state.date)
       .eq('session', state.session)
-      .eq('table_id', state.tableId)
+      .eq('table_id', 'staff-directed')
       .eq('status', 'confirmed')
       .limit(1);
 
@@ -695,7 +695,7 @@ document.getElementById('submitBtn').onclick = async () => {
       guests: state.guests,
       occasion: state.occasion,
       area: state.area,
-      table_id: state.tableId,
+      table_id: state.tableId || 'staff-directed',
       table_label: state.tableLabel,
       first_name: state.fname,
       last_name: state.lname,
