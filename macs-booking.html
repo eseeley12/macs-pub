@@ -265,24 +265,24 @@ textarea.finput{resize:vertical;min-height:90px}
         <div class="area-card selected" data-area="bar" id="area-bar">
           <div class="area-icon">🍺</div>
           <div class="area-name">Bar Area</div>
-          
-          
+          <div class="area-cap">Up to 18 guests · 5 tables</div>
+          <span class="area-avail loading" id="avail-bar">Checking...</span>
         </div>
         <div class="area-card" data-area="bistro" id="area-bistro">
           <div class="area-icon">🍽️</div>
           <div class="area-name">Bistro</div>
-          
-          
+          <div class="area-cap">Up to 58 guests · 10 tables</div>
+          <span class="area-avail loading" id="avail-bistro">Checking...</span>
         </div>
         <div class="area-card" data-area="outside" id="area-outside">
           <div class="area-icon">🌿</div>
           <div class="area-name">Outside Area</div>
-          
-          
+          <div class="area-cap">Up to 24 guests · 6 tables</div>
+          <span class="area-avail loading" id="avail-outside">Checking...</span>
         </div>
       </div>
 
-      <div class="table-map" id="tableMapWrap" style="display:none">
+      <div class="table-map" id="tableMapWrap">
         <div class="table-map-title">Select a Table — <span id="area-label">Bar Area</span></div>
         <div class="table-grid" id="tableGrid"></div>
         <div class="table-legend">
@@ -409,7 +409,7 @@ const AREA_NAMES = { bar:'Bar Area', bistro:'Bistro', outside:'Outside Area' };
 // ============================================================
 let state = {
   date:'', session:'', guests:2, occasion:'Dining',
-  area:'bar', tableId:'staff-directed', tableLabel:'', tableSeats:0,
+  area:'bar', tableId:null, tableLabel:'', tableSeats:0,
   fname:'', lname:'', phone:'', email:'', requests:'',
   step:1
 };
@@ -451,7 +451,20 @@ document.querySelectorAll('.area-card').forEach(card => {
 // ============================================================
 // AVAILABILITY CHECK
 // ============================================================
-function {});
+async function checkAvailability(date, session) {
+  bookedTables = {};
+  if (DEMO_MODE) return; // skip in demo
+
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('table_id')
+      .eq('date', date)
+      .eq('session', session)
+      .eq('status', 'confirmed');
+
+    if (!error && data) {
+      data.forEach(row => { bookedTables[row.table_id] = true; });
     }
   } catch(e) { console.warn('Availability check failed:', e); }
 }
@@ -583,7 +596,7 @@ document.getElementById('n1').onclick = async () => {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Checking availability...';
 
-  await ;
+  await checkAvailability(state.date, state.session);
   updateAreaBadges();
   renderTableGrid();
 
@@ -595,7 +608,7 @@ document.getElementById('n1').onclick = async () => {
 document.getElementById('b2').onclick = () => goStep(1);
 document.getElementById('n2').onclick = () => {
   if(!state.tableId) {
-    setNotice('avail-notice-area', 'warn', 'Please select an area to continue.');
+    setNotice('avail-notice-area', 'warn', 'Please select a table to continue.');
     return;
   }
   setNotice('avail-notice-area', '', '');
@@ -682,8 +695,8 @@ document.getElementById('submitBtn').onclick = async () => {
       guests: state.guests,
       occasion: state.occasion,
       area: state.area,
-      table_id: 'staff-directed',
-      table_label: 'Staff Directed',
+      table_id: state.tableId,
+      table_label: state.tableLabel,
       first_name: state.fname,
       last_name: state.lname,
       phone: state.phone,
