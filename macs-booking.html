@@ -444,7 +444,7 @@ document.querySelectorAll('.area-card').forEach(card => {
     state.area = card.dataset.area;
     state.tableId = null;
     document.getElementById('area-label').textContent = AREA_NAMES[state.area];
-    renderTableGrid();
+    // renderTableGrid();
   };
 });
 
@@ -480,7 +480,7 @@ function getAreaAvailability(area) {
   return { status:'open', text:`${available.length} tables available`, count: available.length };
 }
 
-function updateAreaBadges() {
+function updateAreaBadges_DISABLED() {
   ['bar','bistro','outside'].forEach(area => {
     const info = getAreaAvailability(area);
     const badge = document.getElementById('avail-'+area);
@@ -503,7 +503,7 @@ function updateAreaBadges() {
 // ============================================================
 // TABLE GRID RENDER
 // ============================================================
-function renderTableGrid() {
+function renderTableGrid_DISABLED() {
   const grid = document.getElementById('tableGrid');
   grid.innerHTML = '';
   const tables = TABLES[state.area];
@@ -525,7 +525,7 @@ function renderTableGrid() {
         state.tableId = t.id;
         state.tableLabel = t.label;
         state.tableSeats = t.seats;
-        renderTableGrid();
+        // renderTableGrid();
       };
     }
     if (tooSmall && !taken) {
@@ -597,8 +597,8 @@ document.getElementById('n1').onclick = async () => {
   btn.innerHTML = '<span class="spinner"></span>Checking availability...';
 
   await checkAvailability(state.date, state.session);
-  updateAreaBadges();
-  renderTableGrid();
+  // updateAreaBadges();
+  // renderTableGrid();
 
   btn.disabled = false;
   btn.textContent = 'Continue →';
