@@ -104,7 +104,7 @@ textarea.finput{resize:vertical;min-height:90px}
 .table-status-dot{width:7px;height:7px;border-radius:50%;position:absolute;top:6px;right:6px}
 .table-status-dot.avail{background:var(--green)}
 .table-status-dot.taken{background:var(--red)}
-.table-legend{display:flex;gap:1.5rem;margin-top:0.8rem;flex-wrap:wrap}
+.table-legend{display:none;display:flex;gap:1.5rem;margin-top:0.8rem;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream2);opacity:0.5}
 .legend-dot{width:8px;height:8px;border-radius:50%}
 
@@ -265,19 +265,19 @@ textarea.finput{resize:vertical;min-height:90px}
         <div class="area-card selected" data-area="bar" id="area-bar">
           <div class="area-icon">🍺</div>
           <div class="area-name">Bar Area</div>
-          <div class="area-cap">Up to 18 guests · 5 tables</div>
+          <div class="area-cap" style="display:none">Up to 18 guests · 5 tables</div>
           <span class="area-avail loading" id="avail-bar"></span>
         </div>
         <div class="area-card" data-area="bistro" id="area-bistro">
           <div class="area-icon">🍽️</div>
           <div class="area-name">Bistro</div>
-          <div class="area-cap">Up to 58 guests · 10 tables</div>
+          <div class="area-cap" style="display:none">Up to 58 guests · 10 tables</div>
           <span class="area-avail loading" id="avail-bistro"></span>
         </div>
         <div class="area-card" data-area="outside" id="area-outside">
           <div class="area-icon">🌿</div>
           <div class="area-name">Outside Area</div>
-          <div class="area-cap">Up to 24 guests · 6 tables</div>
+          <div class="area-cap" style="display:none">Up to 24 guests · 6 tables</div>
           <span class="area-avail loading" id="avail-outside"></span>
         </div>
       </div>
