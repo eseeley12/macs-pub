@@ -709,11 +709,11 @@ document.getElementById('submitBtn').onclick = async () => {
 
     // Send email notification to pub
     try {
-      await fetch('https://api.resend.com/emails', {
+      await fetch('https://ewfnbswbcqakxdnfwvqj.supabase.co/functions/v1/send-booking-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer re_M1yBtpyQ_E4oe3vbSyxJQwyGELwDURSBd'
+          'Authorization': 'Bearer sb_publishable_1Ysj2MG-3TULeBSVIFdELg_iMNz3otC'
         },
         body: JSON.stringify({
           from: 'bookings@macspubkilmore.com',
